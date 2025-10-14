@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: "currency_db"
+      POSTGRES_USER: "geor"
+      POSTGRES_PASSWORD: "georkryt"
+    ports:
+      - "5434:5432"

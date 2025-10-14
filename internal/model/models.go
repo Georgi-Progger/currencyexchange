@@ -1,0 +1,21 @@
+package model
+
+import "github.com/shopspring/decimal"
+
+type (
+	Currency struct {
+		Id       int64  `json:"id"`
+		Code     string `json:"code"`
+		FullName string `json:"name" db:"full_name"`
+		Sign     string `json:"sign"`
+	}
+
+	ExchangeRate struct {
+		Id              int64            `json:"id"`
+		BaseCurrency    *Currency        `json:"baseCurrency"`
+		TargetCurrency  *Currency        `json:"targetCurrency"`
+		Rate            *decimal.Decimal `json:"rate"`
+		Amount          *decimal.Decimal `json:"amount,omitempty"`
+		ConvertedAmount *decimal.Decimal `json:"convertedAmount,omitempty"`
+	}
+)
