@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	exerror "currencyexchange/internal/exerrors"
 	"currencyexchange/internal/model"
 	"currencyexchange/internal/repo"
 	"errors"
@@ -40,7 +41,7 @@ func (c *CurrencyUsecase) CreateCurrency(ctx context.Context, code, fullName, si
 		return nil, fmt.Errorf("check currency existence failed: %w", err)
 	}
 	if exists {
-		return nil, errors.New("currency already exists")
+		return nil, exerror.ErrCurrencyExists
 	}
 
 	model, err := c.repo.CreateCurrency(ctx, code, fullName, sign)

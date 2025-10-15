@@ -1,11 +1,12 @@
 package handler
 
 import (
+	"currencyexchange/internal/middleware"
 	"database/sql"
 	"net/http"
 )
 
-func (h *Handler) SetupRouter(db *sql.DB) *http.ServeMux {
+func (h *Handler) SetupRouter(db *sql.DB) http.Handler {
 	mux := http.NewServeMux()
 
 	// Currency routes
@@ -18,5 +19,5 @@ func (h *Handler) SetupRouter(db *sql.DB) *http.ServeMux {
 	mux.HandleFunc("GET /api/exchangeRates", h.GetExchangeRates)
 	mux.HandleFunc("GET /api/exchangeRates/{codes}", h.GetExchangeRate)
 
-	return mux
+	return middleware.Logging(mux)
 }
