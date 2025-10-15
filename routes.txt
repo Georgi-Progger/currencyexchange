@@ -1,0 +1,13 @@
+// Currency routes 
+POST /api/currency - Добавление валюты
+в x-www-form-urlencoded указываем поля (name, code, sign)
+
+GET /api/currencies - Получение списка всех валют
+GET /api/currency/{code} - Получение валюты по её коду 
+
+// Exchangerate cuurency routes
+POST /api/exchangeRates - Добавдление обменного курса 
+в x-www-form-urlencoded указываем поля (baseCurrencyCode, targetCurrencyCode, rate)
+
+GET /api/exchangeRates
+GET /api/exchangeRates/{codes}
