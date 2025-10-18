@@ -1,47 +1,40 @@
 package handler
 
 import (
+	"currencyexchange/internal/models"
 	"encoding/json"
 	"net/http"
 	"strings"
 )
 
 func (h *Handler) CreateExchangerate(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		JSONError(w, "failed parse form: "+err.Error(), http.StatusBadRequest)
+	var req models.ExchangeRateRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		JSONError(w, "invalid JSON format", http.StatusBadRequest)
 		return
 	}
 
-	rate := r.FormValue("rate")
-	baseCurrencyCode := r.FormValue("baseCurrencyCode")
-	targetCurrencyCode := r.FormValue("targetCurrencyCode")
-
-	if len(baseCurrencyCode) == 0 || len(targetCurrencyCode) == 0 {
+	if len(req.BaseCurrency) == 0 || len(req.TargetCurrency) == 0 {
 		JSONError(w, "fields is empty", http.StatusBadRequest)
 		return
 	}
 
-	currency, err := h.usecase.CreateExchangeRate(r.Context(), rate, baseCurrencyCode, targetCurrencyCode)
+	exchange, err := h.usecase.CreateExchangeRate(r.Context(), req.Rate.String(), req.BaseCurrency, req.TargetCurrency)
 	if err != nil {
 		JSONError(w, "exchangerate create failed: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(currency)
+	JSONResponse(w, exchange, http.StatusCreated)
 }
 
 func (h *Handler) GetExchangeRates(w http.ResponseWriter, r *http.Request) {
-	currencies, err := h.usecase.GetExchangeRates(r.Context())
+	exchangerates, err := h.usecase.GetExchangeRates(r.Context())
 	if err != nil {
 		JSONError(w, "get exchangerates failed: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(currencies)
+	JSONResponse(w, exchangerates, http.StatusOK)
 }
 
 func (h *Handler) GetExchangeRate(w http.ResponseWriter, r *http.Request) {
@@ -53,15 +46,13 @@ func (h *Handler) GetExchangeRate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currencies, err := h.usecase.GetExchangeRate(r.Context(), codes)
+	exchangerate, err := h.usecase.GetExchangeRate(r.Context(), codes)
 	if err != nil {
 		JSONError(w, "get exchangerate reate failed: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(currencies)
+	JSONResponse(w, exchangerate, http.StatusOK)
 }
 
 func (h *Handler) UpdateExchangeRate(w http.ResponseWriter, r *http.Request) {
@@ -73,15 +64,13 @@ func (h *Handler) UpdateExchangeRate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := r.ParseForm()
-	if err != nil {
-		JSONError(w, "parse form failed: "+err.Error(), http.StatusBadRequest)
+	var req models.ExchangeRateRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		JSONError(w, "invalid JSON format", http.StatusBadRequest)
 		return
 	}
 
-	rate := r.FormValue("rate")
-
-	currencies, err := h.usecase.UpdateExchangeRate(r.Context(), codes, rate)
+	currencies, err := h.usecase.UpdateExchangeRate(r.Context(), codes, req.Rate.String())
 	if err != nil {
 		JSONError(w, "update exchangerate failed: "+err.Error(), http.StatusBadRequest)
 		return

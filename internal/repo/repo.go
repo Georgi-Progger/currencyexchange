@@ -2,25 +2,25 @@ package repo
 
 import (
 	"context"
-	"currencyexchange/internal/model"
+	"currencyexchange/internal/models"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/shopspring/decimal"
 )
 
 type Currency interface {
-	GetCurrencies(ctx context.Context) ([]model.Currency, error)
-	GetCurrencyByCode(ctx context.Context, code string) (*model.Currency, error)
-	CreateCurrency(ctx context.Context, code, fullName, sign string) (*model.Currency, error)
+	GetCurrencies(ctx context.Context) ([]models.Currency, error)
+	GetCurrencyByCode(ctx context.Context, code string) (models.Currency, error)
+	CreateCurrency(ctx context.Context, currency models.Currency) (models.Currency, error)
 	GetCurrencyExists(ctx context.Context, code string) (bool, error)
 }
 
 type ExchangeRate interface {
-	GetExchangeRates(ctx context.Context) ([]model.ExchangeRate, error)
-	GetExchangeRateByCode(ctx context.Context, firstCode, secondCode string) (*model.ExchangeRate, error)
-	CreateExchangeRate(ctx context.Context, rate, firstCode, secondCode string) (*model.ExchangeRate, error)
+	GetExchangeRates(ctx context.Context) ([]models.ExchangeRate, error)
+	GetExchangeRateByCode(ctx context.Context, firstCode, secondCode string) (models.ExchangeRate, error)
+	CreateExchangeRate(ctx context.Context, rate, firstCode, secondCode string) (models.ExchangeRate, error)
 	CheckCurrenciesExist(ctx context.Context, firstCode, secondCode string) (bool, error)
-	UpdateExchangeRate(ctx context.Context, firstCode, secondCode string, newRate decimal.Decimal) (*model.ExchangeRate, error)
+	UpdateExchangeRate(ctx context.Context, firstCode, secondCode string, newRate decimal.Decimal) (models.ExchangeRate, error)
 }
 
 type Repository struct {

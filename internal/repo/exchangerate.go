@@ -2,7 +2,7 @@ package repo
 
 import (
 	"context"
-	"currencyexchange/internal/model"
+	"currencyexchange/internal/models"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/shopspring/decimal"
@@ -18,7 +18,7 @@ func NewExchangeRateRepo(db *sqlx.DB) *exchangeRateRepo {
 	}
 }
 
-func (e *exchangeRateRepo) GetExchangeRates(ctx context.Context) ([]model.ExchangeRate, error) {
+func (e *exchangeRateRepo) GetExchangeRates(ctx context.Context) ([]models.ExchangeRate, error) {
 	query := `
         SELECT 
             er.id,
@@ -48,18 +48,18 @@ func (e *exchangeRateRepo) GetExchangeRates(ctx context.Context) ([]model.Exchan
 		return nil, err
 	}
 
-	exchangeRates := make([]model.ExchangeRate, len(results))
+	exchangeRates := make([]models.ExchangeRate, len(results))
 	for i, result := range results {
-		exchangeRates[i] = model.ExchangeRate{
+		exchangeRates[i] = models.ExchangeRate{
 			Id:   result.ID,
-			Rate: &result.Rate,
-			BaseCurrency: &model.Currency{
+			Rate: result.Rate,
+			BaseCurrency: models.Currency{
 				Id:       result.BaseID,
 				Code:     result.BaseCode,
 				FullName: result.BaseName,
 				Sign:     result.BaseSign,
 			},
-			TargetCurrency: &model.Currency{
+			TargetCurrency: models.Currency{
 				Id:       result.TargetID,
 				Code:     result.TargetCode,
 				FullName: result.TargetName,
@@ -71,7 +71,7 @@ func (e *exchangeRateRepo) GetExchangeRates(ctx context.Context) ([]model.Exchan
 	return exchangeRates, nil
 }
 
-func (e *exchangeRateRepo) GetExchangeRateByCode(ctx context.Context, firstCode, secondCode string) (*model.ExchangeRate, error) {
+func (e *exchangeRateRepo) GetExchangeRateByCode(ctx context.Context, firstCode, secondCode string) (models.ExchangeRate, error) {
 	query := `
 		SELECT 
 			er.id,
@@ -99,28 +99,28 @@ func (e *exchangeRateRepo) GetExchangeRateByCode(ctx context.Context, firstCode,
 
 	err := e.db.GetContext(ctx, &result, query, firstCode, secondCode)
 	if err != nil {
-		return nil, err
+		return models.ExchangeRate{}, err
 	}
 
-	return &model.ExchangeRate{
+	return models.ExchangeRate{
 		Id: result.ID,
-		BaseCurrency: &model.Currency{
+		BaseCurrency: models.Currency{
 			Id:       result.BaseID,
 			Code:     result.BaseCode,
 			FullName: result.BaseName,
 			Sign:     result.BaseSign,
 		},
-		TargetCurrency: &model.Currency{
+		TargetCurrency: models.Currency{
 			Id:       result.TargetID,
 			Code:     result.TargetCode,
 			FullName: result.TargetName,
 			Sign:     result.TargetSign,
 		},
-		Rate: &result.Rate,
+		Rate: result.Rate,
 	}, nil
 }
 
-func (e *exchangeRateRepo) UpdateExchangeRate(ctx context.Context, firstCode, secondCode string, newRate decimal.Decimal) (*model.ExchangeRate, error) {
+func (e *exchangeRateRepo) UpdateExchangeRate(ctx context.Context, firstCode, secondCode string, newRate decimal.Decimal) (models.ExchangeRate, error) {
 	query := `
         WITH updated AS (
             UPDATE exchange_rate 
@@ -152,19 +152,19 @@ func (e *exchangeRateRepo) UpdateExchangeRate(ctx context.Context, firstCode, se
 
 	err := e.db.GetContext(ctx, &result, query, newRate, firstCode, secondCode)
 	if err != nil {
-		return nil, err
+		return models.ExchangeRate{}, err
 	}
 
-	return &model.ExchangeRate{
+	return models.ExchangeRate{
 		Id:   result.ID,
-		Rate: &result.Rate,
-		BaseCurrency: &model.Currency{
+		Rate: result.Rate,
+		BaseCurrency: models.Currency{
 			Id:       result.BaseID,
 			Code:     result.BaseCode,
 			FullName: result.BaseName,
 			Sign:     result.BaseSign,
 		},
-		TargetCurrency: &model.Currency{
+		TargetCurrency: models.Currency{
 			Id:       result.TargetID,
 			Code:     result.TargetCode,
 			FullName: result.TargetName,
@@ -173,7 +173,7 @@ func (e *exchangeRateRepo) UpdateExchangeRate(ctx context.Context, firstCode, se
 	}, nil
 }
 
-func (e *exchangeRateRepo) CreateExchangeRate(ctx context.Context, rate, firstCode, secondCode string) (*model.ExchangeRate, error) {
+func (e *exchangeRateRepo) CreateExchangeRate(ctx context.Context, rate, firstCode, secondCode string) (models.ExchangeRate, error) {
 	query := `
 		 WITH inserted AS (
             insert into exchange_rate (base_currency_id, target_currency_id, rate) 
@@ -208,24 +208,24 @@ func (e *exchangeRateRepo) CreateExchangeRate(ctx context.Context, rate, firstCo
 
 	err := e.db.GetContext(ctx, &result, query, rate, firstCode, secondCode)
 	if err != nil {
-		return nil, err
+		return models.ExchangeRate{}, err
 	}
 
-	return &model.ExchangeRate{
+	return models.ExchangeRate{
 		Id: result.Id,
-		BaseCurrency: &model.Currency{
+		BaseCurrency: models.Currency{
 			Id:       result.BaseID,
 			Code:     result.BaseCode,
 			FullName: result.BaseName,
 			Sign:     result.BaseSign,
 		},
-		TargetCurrency: &model.Currency{
+		TargetCurrency: models.Currency{
 			Id:       result.TargetID,
 			Code:     result.TargetCode,
 			FullName: result.TargetName,
 			Sign:     result.TargetSign,
 		},
-		Rate: &result.Rate,
+		Rate: result.Rate,
 	}, nil
 }
 

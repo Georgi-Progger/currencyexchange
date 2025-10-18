@@ -1,7 +1,9 @@
+// handler/currency.go
 package handler
 
 import (
-	exerror "currencyexchange/internal/exerrors"
+	"currencyexchange/internal/apperror"
+	"currencyexchange/internal/models"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -9,46 +11,38 @@ import (
 )
 
 func (h *Handler) CreateCurrency(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		JSONError(w, "failed parse form: "+err.Error(), http.StatusBadRequest)
+	var req models.Currency
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		JSONError(w, "invalid JSON format", http.StatusBadRequest)
 		return
 	}
 
-	code := r.FormValue("code")
-	name := r.FormValue("name")
-	symbol := r.FormValue("symbol")
-
-	if len(code) == 0 || len(name) == 0 || len(symbol) == 0 {
-		JSONError(w, "fields is empty", http.StatusBadRequest)
+	if len(req.Code) == 0 || len(req.FullName) == 0 || len(req.Sign) == 0 {
+		JSONError(w, "fields code, full_name and sign are required", http.StatusBadRequest)
 		return
 	}
 
-	currency, err := h.usecase.CreateCurrency(r.Context(), code, name, symbol)
+	currency, err := h.usecase.CreateCurrency(r.Context(), req)
 	if err != nil {
-		if errors.Is(err, exerror.ErrCurrencyExists) {
-			JSONError(w, exerror.ErrCurrencyExists.Error(), http.StatusConflict)
+		if errors.Is(err, apperror.ErrCurrencyExists) {
+			JSONError(w, apperror.ErrCurrencyExists.Error(), http.StatusConflict)
 			return
 		}
-		JSONError(w, "failed create currency: "+err.Error(), http.StatusInternalServerError)
+		JSONError(w, "failed to create currency: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(currency)
+	JSONResponse(w, currency, http.StatusCreated)
 }
 
 func (h *Handler) GetCurrencies(w http.ResponseWriter, r *http.Request) {
 	currencies, err := h.usecase.GetCurrencies(r.Context())
 	if err != nil {
-		JSONError(w, "failed get currencies: "+err.Error(), http.StatusInternalServerError)
+		JSONError(w, "failed to get currencies: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(currencies)
+	JSONResponse(w, currencies, http.StatusOK)
 }
 
 func (h *Handler) GetCurrency(w http.ResponseWriter, r *http.Request) {
@@ -56,17 +50,19 @@ func (h *Handler) GetCurrency(w http.ResponseWriter, r *http.Request) {
 	code = strings.TrimSpace(code)
 
 	if len(code) == 0 {
-		JSONError(w, "currency code is empty", http.StatusBadRequest)
+		JSONError(w, "currency code is required", http.StatusBadRequest)
 		return
 	}
 
-	currencies, err := h.usecase.GetCurrency(r.Context(), code)
+	currency, err := h.usecase.GetCurrency(r.Context(), code)
 	if err != nil {
-		JSONError(w, "failed get currency: "+err.Error(), http.StatusInternalServerError)
+		if errors.Is(err, apperror.ErrCurrencyNotExists) {
+			JSONError(w, apperror.ErrCurrencyNotExists.Error(), http.StatusNotFound)
+			return
+		}
+		JSONError(w, "failed to get currency: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(currencies)
+	JSONResponse(w, currency, http.StatusOK)
 }
