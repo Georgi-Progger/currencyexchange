@@ -18,6 +18,8 @@ func (h *Handler) SetupRouter(db *sql.DB) http.Handler {
 	mux.HandleFunc("POST /api/exchangeRates", h.CreateExchangerate)
 	mux.HandleFunc("GET /api/exchangeRates", h.GetExchangeRates)
 	mux.HandleFunc("GET /api/exchangeRates/{codes}", h.GetExchangeRate)
+	mux.HandleFunc("PATCH /api/exchangeRates", h.UpdateExchangeRate)
+	mux.HandleFunc("GET /api/exchangeRates/exchange", h.GetCalculateExchangerate)
 
 	return middleware.Logging(mux)
 }

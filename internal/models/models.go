@@ -9,11 +9,6 @@ type (
 		FullName string `json:"name" db:"full_name"`
 		Sign     string `json:"sign"`
 	}
-	ExchangeRateRequest struct {
-		BaseCurrency   string          `json:"baseCurrency"`
-		TargetCurrency string          `json:"targetCurrency"`
-		Rate           decimal.Decimal `json:"rate"`
-	}
 
 	ExchangeRate struct {
 		Id             int64           `json:"id"`

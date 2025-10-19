@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"currencyexchange/internal/apperror"
 	"currencyexchange/internal/models"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 )
@@ -64,19 +66,40 @@ func (h *Handler) UpdateExchangeRate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req models.ExchangeRateRequest
+	var req models.UpdateExchangeRateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		JSONError(w, "invalid JSON format", http.StatusBadRequest)
 		return
 	}
 
-	currencies, err := h.usecase.UpdateExchangeRate(r.Context(), codes, req.Rate.String())
+	exchangerate, err := h.usecase.UpdateExchangeRate(r.Context(), codes, req.Rate.String())
 	if err != nil {
 		JSONError(w, "update exchangerate failed: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(currencies)
+	JSONResponse(w, exchangerate, http.StatusOK)
+}
+
+func (h *Handler) GetCalculateExchangerate(w http.ResponseWriter, r *http.Request) {
+	baseCurrency := r.URL.Query().Get("from")
+	targetCurrency := r.URL.Query().Get("to")
+	amount := r.URL.Query().Get("amount")
+
+	if len(baseCurrency) == 0 || len(targetCurrency) == 0 || len(amount) == 0 {
+		JSONError(w, "fields are empty", http.StatusBadRequest)
+		return
+	}
+
+	calculateExchangerate, err := h.usecase.CalculateExchangeRate(r.Context(), baseCurrency, targetCurrency, amount)
+	if err != nil {
+		if errors.Is(err, apperror.ErrCurrencyNotExists) {
+			JSONError(w, apperror.ErrCurrencyNotExists.Error(), http.StatusBadRequest)
+			return
+		}
+		JSONError(w, "get exchangerate reate failed: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	JSONResponse(w, calculateExchangerate, http.StatusOK)
 }

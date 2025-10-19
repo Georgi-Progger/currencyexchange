@@ -5,7 +5,6 @@ import (
 	"currencyexchange/internal/models"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/shopspring/decimal"
 )
 
 type Currency interface {
@@ -20,7 +19,7 @@ type ExchangeRate interface {
 	GetExchangeRateByCode(ctx context.Context, firstCode, secondCode string) (models.ExchangeRate, error)
 	CreateExchangeRate(ctx context.Context, rate, firstCode, secondCode string) (models.ExchangeRate, error)
 	CheckCurrenciesExist(ctx context.Context, firstCode, secondCode string) (bool, error)
-	UpdateExchangeRate(ctx context.Context, firstCode, secondCode string, newRate decimal.Decimal) (models.ExchangeRate, error)
+	UpdateExchangeRate(ctx context.Context, firstCode, secondCode, newRate string) (models.ExchangeRate, error)
 }
 
 type Repository struct {

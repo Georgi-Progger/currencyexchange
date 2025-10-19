@@ -7,6 +7,8 @@ import (
 	"currencyexchange/internal/repo"
 	"errors"
 	"fmt"
+
+	"github.com/shopspring/decimal"
 )
 
 type ExchangerateUsecase struct {
@@ -28,7 +30,7 @@ func (e *ExchangerateUsecase) CreateExchangeRate(ctx context.Context, rate, firs
 
 	model, err := e.repo.CreateExchangeRate(ctx, rate, firstCode, secondCode)
 	if err != nil {
-		return models.ExchangeRate{}, errors.New(fmt.Sprintf("currency exchange is failed: %s", err.Error()))
+		return models.ExchangeRate{}, errors.New(fmt.Sprintf("create currency exchange is failed: %s", err.Error()))
 	}
 
 	return model, nil
@@ -59,5 +61,59 @@ func (e *ExchangerateUsecase) GetExchangeRate(ctx context.Context, twoCodes stri
 }
 
 func (e *ExchangerateUsecase) UpdateExchangeRate(ctx context.Context, twoCodes, newRate string) (models.ExchangeRate, error) {
-	return models.ExchangeRate{}, nil
+	if len(twoCodes) != 6 {
+		return models.ExchangeRate{}, errors.New("not correct format")
+	}
+
+	firstCode := twoCodes[:3]
+	secondCode := twoCodes[3:]
+	exists, err := e.repo.CheckCurrenciesExist(ctx, firstCode, secondCode)
+	if err != nil {
+		return models.ExchangeRate{}, fmt.Errorf("check currencies existence failed: %w", err)
+	}
+	if !exists {
+		return models.ExchangeRate{}, apperror.ErrCurrencyNotExists
+	}
+
+	model, err := e.repo.UpdateExchangeRate(ctx, firstCode, secondCode, newRate)
+	if err != nil {
+		return models.ExchangeRate{}, errors.New(fmt.Sprintf("update currency exchange is failed: %s", err.Error()))
+	}
+
+	return model, nil
+}
+
+func (e *ExchangerateUsecase) CalculateExchangeRate(ctx context.Context, baseCurrency, targetCurrency, amount string) (models.CalculateExchangeRate, error) {
+	amountDecimal, err := decimal.NewFromString(amount)
+	if err != nil {
+		return models.CalculateExchangeRate{}, fmt.Errorf("invalid amount format: %v", err)
+	}
+
+	directRate, err := e.repo.GetExchangeRateByCode(ctx, baseCurrency, targetCurrency)
+	if err == nil {
+		convertedAmount := amountDecimal.Mul(directRate.Rate)
+		return models.CalculateExchangeRate{
+			BaseCurrency:    directRate.BaseCurrency,
+			TargetCurrency:  directRate.TargetCurrency,
+			Rate:            directRate.Rate,
+			Amount:          amountDecimal,
+			ConvertedAmount: convertedAmount,
+		}, nil
+	}
+
+	reverseRate, err := e.repo.GetExchangeRateByCode(ctx, targetCurrency, baseCurrency)
+	if err == nil {
+		rate := decimal.NewFromFloat(1).Div(reverseRate.Rate)
+		convertedAmount := amountDecimal.Mul(rate)
+
+		return models.CalculateExchangeRate{
+			BaseCurrency:    reverseRate.TargetCurrency,
+			TargetCurrency:  reverseRate.BaseCurrency,
+			Rate:            rate,
+			Amount:          amountDecimal,
+			ConvertedAmount: convertedAmount,
+		}, nil
+	}
+
+	return models.CalculateExchangeRate{}, apperror.ErrCurrencyNotExists
 }

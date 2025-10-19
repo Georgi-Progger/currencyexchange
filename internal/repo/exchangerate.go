@@ -120,7 +120,7 @@ func (e *exchangeRateRepo) GetExchangeRateByCode(ctx context.Context, firstCode,
 	}, nil
 }
 
-func (e *exchangeRateRepo) UpdateExchangeRate(ctx context.Context, firstCode, secondCode string, newRate decimal.Decimal) (models.ExchangeRate, error) {
+func (e *exchangeRateRepo) UpdateExchangeRate(ctx context.Context, firstCode, secondCode, newRate string) (models.ExchangeRate, error) {
 	query := `
         WITH updated AS (
             UPDATE exchange_rate 

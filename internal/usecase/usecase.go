@@ -17,6 +17,7 @@ type ExchangeRate interface {
 	GetExchangeRates(ctx context.Context) ([]models.ExchangeRate, error)
 	GetExchangeRate(ctx context.Context, twoCodes string) (models.ExchangeRate, error)
 	UpdateExchangeRate(ctx context.Context, twoCodes string, newRate string) (models.ExchangeRate, error)
+	CalculateExchangeRate(ctx context.Context, baseCurrency, targetCurrenct, amount string) (models.CalculateExchangeRate, error)
 }
 
 type Usecase struct {
