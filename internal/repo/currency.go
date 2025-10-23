@@ -2,7 +2,9 @@ package repo
 
 import (
 	"context"
+	"currencyexchange/internal/apperror"
 	"currencyexchange/internal/models"
+	"database/sql"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -43,6 +45,9 @@ func (c *currencyRepo) GetCurrencyByCode(ctx context.Context, code string) (mode
 	currency := models.Currency{}
 	err := c.db.GetContext(ctx, &currency, query, code)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return models.Currency{}, apperror.ErrCurrencyNotFound
+		}
 		return models.Currency{}, err
 	}
 

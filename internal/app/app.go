@@ -23,12 +23,13 @@ func Run() {
 
 	db, err := dbsource.NewDb(cfg)
 	if err != nil {
-		slog.Error("error")
+		slog.Error("db connect failed")
 	}
-	defer db.Close()
-
-	db.SetMaxOpenConns(10)
-	db.SetMaxIdleConns(5)
+	defer func() {
+		if err := db.Close(); err != nil {
+			slog.Error("db close failed")
+		}
+	}()
 
 	repos := repo.NewRepository(db)
 	usecases := usecase.NewUsecase(repos)

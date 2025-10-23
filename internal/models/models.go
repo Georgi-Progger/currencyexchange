@@ -1,6 +1,10 @@
 package models
 
-import "github.com/shopspring/decimal"
+import (
+	"currencyexchange/internal/apperror"
+
+	"github.com/shopspring/decimal"
+)
 
 type (
 	Currency struct {
@@ -26,3 +30,11 @@ type (
 		ConvertedAmount decimal.Decimal `json:"convertedAmount"`
 	}
 )
+
+func (r *Currency) Validate() error {
+	if r.Code == "" || r.FullName == "" || r.Sign == "" {
+		return apperror.ErrValidation
+	}
+
+	return nil
+}

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"currencyexchange/internal/apperror"
 	"encoding/json"
 	"net/http"
 )
@@ -18,6 +19,7 @@ func JSONResponse(w http.ResponseWriter, data interface{}, statusCode int) {
 	}
 }
 
-func JSONError(w http.ResponseWriter, message string, statusCode int) {
-	JSONResponse(w, ErrorResponse{Message: message}, statusCode)
+func JSONError(w http.ResponseWriter, err error) {
+	statusCode := apperror.GetHTTPStatus(err)
+	JSONResponse(w, map[string]string{"error": err.Error()}, statusCode)
 }

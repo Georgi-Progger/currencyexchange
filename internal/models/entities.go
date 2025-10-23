@@ -1,6 +1,10 @@
 package models
 
-import "github.com/shopspring/decimal"
+import (
+	"currencyexchange/internal/apperror"
+
+	"github.com/shopspring/decimal"
+)
 
 type (
 	ExchangeRateRequest struct {
@@ -12,3 +16,11 @@ type (
 		Rate decimal.Decimal `json:"rate"`
 	}
 )
+
+func (r *ExchangeRateRequest) Validate() error {
+	if r.BaseCurrency == "" || r.TargetCurrency == "" || r.Rate.String() == "" {
+		return apperror.ErrValidation
+	}
+
+	return nil
+}

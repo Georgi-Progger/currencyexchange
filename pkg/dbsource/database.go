@@ -19,6 +19,9 @@ func NewDb(cfg config.Config) (*sqlx.DB, error) {
 		os.Exit(1)
 	}
 
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(5)
+
 	if err := db.Ping(); err != nil {
 		slog.Error("Failed to ping database", "error", err)
 		os.Exit(1)

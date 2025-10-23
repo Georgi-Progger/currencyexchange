@@ -7,12 +7,10 @@ RUN go mod download
 
 COPY . .
 
-RUN GOBIN=/usr/local/bin go install github.com/pressly/goose/v3
-
-RUN chmod +x run.sh
-
 RUN go build -o main ./cmd
+
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 
 EXPOSE 8080
 
-CMD ./run.sh && ./main
+CMD ["./main"]
