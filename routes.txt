@@ -6,10 +6,39 @@ POST /api/currency - Добавление валюты
     "code": "USD",
     "sign": "$"
 }
+response
+{
+    "id": "1",
+    "name": "Dollar",
+    "code": "USD",
+    "sign": "$"
+}
 
 GET /api/currencies - Получение списка всех валют
-GET /api/currency/{code} - Получение валюты по её коду 
+response
+[
+    {
+        "id": 1,
+        "code": "EUR",
+        "name": "Dollar",
+        "sign": "$"
+    },
+     {
+        "id": 2,
+        "code": "USD",
+        "name": "Dollar",
+        "sign": "$"
+    },
+]
 
+GET api/currency?code=CODE - Получение валюты по её коду 
+response 
+{
+    "id": "1",
+    "name": "Dollar",
+    "code": "USD",
+    "sign": "$"
+}
 
 
 // Exchangerate cuurency routes
@@ -17,11 +46,102 @@ POST /api/exchangeRates - Добавдление обменного курса
 в json формате указываем поля (baseCurrencyCode, targetCurrencyCode, rate)
 {
     "baseCurrency": "USD",
-    "targetCurrency": "ERU",
+    "targetCurrency": "EUR",
     "rate": 0.99
+}
+response
+{
+    "id": 1,
+    "baseCurrency": {
+        "id": 2,
+        "code": "USD",
+        "name": "Dollar",
+        "sign": "$"
+    },
+    "targetCurrency": {
+        "id": 1,
+        "code": "EUR",
+        "name": "Dollar",
+        "sign": "$"
+    },
+    "rate": "0.99"
 }
 
 GET /api/exchangeRates - Получение всех обменных курсов
-GET /api/exchangeRates/{codes} - Получение определнного обменного курса
-PATCH /api/exchangeRates/{codes} - Обновление рейта в обменном курсе 
+response
+[
+    {
+        "id": 1,
+        "baseCurrency": {
+            "id": 2,
+            "code": "USD",
+            "name": "Dollar",
+            "sign": "$"
+        },
+        "targetCurrency": {
+            "id": 1,
+            "code": "EUR",
+            "name": "Dollar",
+            "sign": "$"
+        },
+        "rate": "0.99"
+    }
+]
+
+GET /api/exchangeRates?codes=CODES - Получение определнного обменного курса
+response
+    {
+        "id": 1,
+        "baseCurrency": {
+            "id": 2,
+            "code": "USD",
+            "name": "Dollar",
+            "sign": "$"
+        },
+        "targetCurrency": {
+            "id": 1,
+            "code": "EUR",
+            "name": "Dollar",
+            "sign": "$"
+        },
+        "rate": "0.99"
+    }
+
+PATCH /api/exchangeRates?codes=CODES - Обновление рейта в обменном курсе 
+response
+    {
+        "id": 1,
+        "baseCurrency": {
+            "id": 2,
+            "code": "USD",
+            "name": "Dollar",
+            "sign": "$"
+        },
+        "targetCurrency": {
+            "id": 1,
+            "code": "EUR",
+            "name": "Dollar",
+            "sign": "$"
+        },
+        "rate": "0.99"
+    }
 GET /api/exchangeRates/exchange?from=BASE_CURRENCY_CODE&to=TARGET_CURRENCY_CODE&amount=$AMOUNT - Получение суммы вычисленной с помощью обменного курс 
+response
+{
+    "id": 0,
+    "baseCurrency": {
+        "id": 2,
+        "code": "USD",
+        "name": "Dollar",
+        "sign": "$"
+    },
+    "targetCurrency": {
+        "id": 1,
+        "code": "EUR",
+        "name": "Dollar",
+        "sign": "$"
+    },
+    "rate": "0.99",
+    "amount": "10",
+    "convertedAmount": "9.9"
+}
